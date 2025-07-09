@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Studio - EchoVerse AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dubbing.css"> <!-- Reusing some styles -->
+    <link rel="stylesheet" href="css/tts.css">
+</head>
+<body>
+
+    <header class="header">
+        <nav class="nav container">
+            <a href="index.html" class="nav__logo">EchoVerse AI</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="studio section">
+            <div class="studio__container container">
+                <div class="studio__header">
+                    <h1 class="studio__title">Text-to-Speech Studio</h1>
+                    <p class="studio__description">Type your text, choose a voice, and generate realistic audio.</p>
+                </div>
+
+                <div class="tts-workspace">
+                    <div class="tts-input-area">
+                        <textarea id="tts-text" class="tts-textarea" placeholder="Enter text here..."></textarea>
+                    </div>
+
+                    <div class="tts-controls">
+                        <h3>Voice Settings</h3>
+                        <div class="control-group">
+                            <label for="voice-select">Voice</label>
+                            <select id="voice-select" class="custom-select"></select>
+                        </div>
+                        <div class="control-group">
+                            <label for="rate-slider">Speed: <span id="rate-value">1</span></label>
+                            <input type="range" id="rate-slider" class="custom-slider" min="0.5" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label for="pitch-slider">Pitch: <span id="pitch-value">1</span></label>
+                            <input type="range" id="pitch-slider" class="custom-slider" min="0" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="control-group">
+                            <button id="speak-btn" class="studio__button">
+                                Generate & Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                 <div id="result-area" class="studio__result hidden">
+                    <h2 class="section__title-sm">Generated Audio</h2>
+                    <audio id="audio-player" controls class="tts-audio-player"></audio>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__container container">
+            <p>&copy; 2024 EchoVerse AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/tts.js"></script>
+</body>
+</html> 

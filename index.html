@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Translate and dub videos with our advanced AI video dubbing platform. Featuring state-of-the-art lip-sync technology, voice cloning, and support for over 30 languages. Try it free online.">
+    <title>AI Video Dubbing & Translation with Perfect Lip-Sync | EchoVerse AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+</head>
+<body>
+
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">EchoVerse AI</a>
+            <div class="nav__menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="#features" class="nav__link">Features</a></li>
+                    <li class="nav__item"><a href="#pricing" class="nav__link">Pricing</a></li>
+                    <li class="nav__item"><a href="#faq" class="nav__link">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="nav__buttons">
+                <a href="login.html" class="nav__button--ghost">Log In</a>
+                <a href="login.html?form=signup" class="nav__button--primary">Start For Free</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="hero section">
+            <div class="hero__container container">
+                <h1 class="hero__title">AI Video Dubbing with Perfect Lip-Sync</h1>
+                <p class="hero__description">
+                    Automatically translate videos online with our AI dubbing tool. Go from a simple upload to multi-language video content in minutes, reaching a global audience effortlessly.
+                </p>
+                <a href="#studio" class="hero__button">Translate a Video For Free</a>
+                <p class="hero__subtext">No credit card required</p>
+            </div>
+        </section>
+
+        <section class="studio section" id="studio">
+            <h2 class="section__title">Experience AI Video Translation Instantly</h2>
+            <div class="studio__container container">
+                <!-- Step 1: Upload -->
+                <div class="studio__step studio__step--upload active" id="upload-step">
+                    <div class="upload__area" id="upload-area">
+                        <i class="ri-upload-cloud-2-line upload__icon"></i>
+                        <p class="upload__text">Drag & drop your video file here, or <span class="upload__browse">browse</span></p>
+                        <p class="upload__hint">Supports MP4, MOV, WEBM - Max 500MB</p>
+                        <input type="file" id="file-input" accept="video/*" hidden>
+                    </div>
+                </div>
+
+                <!-- Step 2: Configure & Process -->
+                <div class="studio__step studio__step--process" id="process-step">
+                    <div class="process__preview">
+                        <video id="video-preview" class="process__video-thumb" controls></video>
+                        <p id="video-filename" class="process__filename"></p>
+                    </div>
+                    <div class="process__settings">
+                        <div class="setting__group">
+                            <label for="target-lang">Dub video into:</label>
+                            <select id="target-lang" class="setting__select">
+                                <option value="en-US">English (US)</option>
+                                <option value="es-ES">Spanish</option>
+                                <option value="fr-FR">French</option>
+                                <option value="de-DE">German</option>
+                                <option value="ja-JP">Japanese</option>
+                                <option value="ko-KR">Korean</option>
+                                <option value="pt-BR">Portuguese (Brazil)</option>
+                            </select>
+                        </div>
+                        <div class="setting__group">
+                            <label>AI Dubbing Features:</label>
+                            <div class="setting__checkbox">
+                                <input type="checkbox" id="lip-sync" checked>
+                                <label for="lip-sync">Enable Lip-Sync</label>
+                            </div>
+                        </div>
+                        <button id="translate-btn" class="process__button">
+                            <i class="ri-translate-2"></i>
+                            Translate Video
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Loading -->
+                <div class="studio__step studio__step--loading" id="loading-step">
+                    <div class="loader"></div>
+                    <p class="loading__text">AI is processing your video...</p>
+                    <p class="loading__subtext" id="loading-status">Transcribing audio (1/4)</p>
+                </div>
+
+                <!-- Step 4: Result -->
+                <div class="studio__step studio__step--result" id="result-step">
+                    <h3 class="result__title">Your AI Dubbed Video is Ready!</h3>
+                    <div class="result__videos">
+                        <div class="video__card">
+                            <h4>Original Video</h4>
+                            <video id="original-video" controls></video>
+                        </div>
+                        <div class="video__card">
+                            <h4>Dubbed Video with Lip-Sync</h4>
+                            <video id="dubbed-video" controls></video>
+                        </div>
+                    </div>
+                    <div class="result__actions">
+                        <button id="download-btn" class="result__button--primary"><i class="ri-download-2-line"></i> Download Video</button>
+                        <button id="restart-btn" class="result__button--secondary"><i class="ri-arrow-go-back-line"></i> Dub Another Video</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features section" id="features">
+            <h2 class="section__title">Full Suite for Video Localization</h2>
+            <div class="features__container container">
+                <div class="feature__card">
+                    <i class="ri-mic-line feature__icon"></i>
+                    <h3 class="feature__title">Natural Voice Cloning</h3>
+                    <p class="feature__description">Our AI voice generator can clone your voice for dubbing, maintaining brand consistency across all multi-language video content.</p>
+                </div>
+                <div class="feature__card">
+                    <i class="ri-lips-line feature__icon"></i>
+                    <h3 class="feature__title">Accurate AI Lip-Sync</h3>
+                    <p class="feature__description">Our leading AI technology ensures lip movements perfectly match the translated audio for a natural, seamless viewing experience.</p>
+                </div>
+                <div class="feature__card">
+                    <i class="ri-global-line feature__icon"></i>
+                    <h3 class="feature__title">Translate Video to 30+ Languages</h3>
+                    <p class="feature__description">Take your content global. Our video translator makes it easy to reach over 95% of the world's markets.</p>
+                </div>
+                <div class="feature__card">
+                    <i class="ri-edit-2-line feature__icon"></i>
+                    <h3 class="feature__title">Automatic Subtitle Generator</h3>
+                    <p class="feature__description">Easily edit and refine AI-generated subtitles and captions to ensure 100% accuracy and perfect contextual fit.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="pricing section" id="pricing">
+            <h2 class="section__title">Our AI Dubbing Plans</h2>
+            <div class="pricing__container container">
+                <div class="pricing__card">
+                    <h3 class="pricing__plan-name">Free</h3>
+                    <div class="pricing__price">$0<span class="pricing__price-period">/month</span></div>
+                    <ul class="pricing__features-list">
+                        <li><i class="ri-check-line"></i> 5 minutes/month of video translation</li>
+                        <li><i class="ri-check-line"></i> Basic AI Voices</li>
+                        <li><i class="ri-check-line"></i> Watermark on videos</li>
+                        <li><i class="ri-check-line"></i> Community Support</li>
+                    </ul>
+                    <a href="#" class="pricing__button">Get Started Free</a>
+                </div>
+                <div class="pricing__card pricing__card--popular">
+                    <div class="pricing__popular-badge">Most Popular</div>
+                    <h3 class="pricing__plan-name">Creator</h3>
+                    <div class="pricing__price">$24<span class="pricing__price-period">/month</span></div>
+                    <ul class="pricing__features-list">
+                        <li><i class="ri-check-line"></i> 120 minutes/month of AI dubbing</li>
+                        <li><i class="ri-check-line"></i> Premium AI Voices & Voice Cloning</li>
+                        <li><i class="ri-check-line"></i> No Watermark & Full HD</li>
+                        <li><i class="ri-check-line"></i> Automatic Subtitles</li>
+                        <li><i class="ri-check-line"></i> Email Support</li>
+                    </ul>
+                    <a href="#" class="pricing__button pricing__button--popular">Choose Plan</a>
+                </div>
+                <div class="pricing__card">
+                    <h3 class="pricing__plan-name">Enterprise</h3>
+                    <div class="pricing__price-custom">Custom</div>
+                    <ul class="pricing__features-list">
+                        <li><i class="ri-check-line"></i> Unlimited video translation</li>
+                        <li><i class="ri-check-line"></i> Dedicated Voice Cloning</li>
+                        <li><i class="ri-check-line"></i> Team Collaboration & Video Localization Tools</li>
+                        <li><i class="ri-check-line"></i> API Access</li>
+                        <li><i class="ri-check-line"></i> Dedicated Support</li>
+                    </ul>
+                    <a href="#" class="pricing__button">Contact Us</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="trusted section">
+            <h2 class="section__title-sm">Trusted by over 50,000+ creators and brands worldwide</h2>
+            <div class="trusted__container container">
+                <div class="logo-slider">
+                    <div class="logo-slide">
+                        <img src="https://avatar.vercel.sh/microsoft" alt="Microsoft Logo">
+                        <img src="https://avatar.vercel.sh/google" alt="Google Logo">
+                        <img src="https://avatar.vercel.sh/amazon" alt="Amazon Logo">
+                        <img src="https://avatar.vercel.sh/meta" alt="Meta Logo">
+                        <img src="https://avatar.vercel.sh/apple" alt="Apple Logo">
+                        <img src="https://avatar.vercel.sh/netflix" alt="Netflix Logo">
+                        <img src="https://avatar.vercel.sh/tesla" alt="Tesla Logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="https://avatar.vercel.sh/microsoft" alt="Microsoft Logo">
+                        <img src="https://avatar.vercel.sh/google" alt="Google Logo">
+                        <img src="https://avatar.vercel.sh/amazon" alt="Amazon Logo">
+                        <img src="https://avatar.vercel.sh/meta" alt="Meta Logo">
+                        <img src="https://avatar.vercel.sh/apple" alt="Apple Logo">
+                        <img src="https://avatar.vercel.sh/netflix" alt="Netflix Logo">
+                        <img src="https://avatar.vercel.sh/tesla" alt="Tesla Logo">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer__container container">
+            <p>&copy; 2024 EchoVerse AI. All rights reserved.</p>
+            <div class="footer__links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>

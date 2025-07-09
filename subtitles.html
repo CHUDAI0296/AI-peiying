@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Subtitle Generator - EchoVerse AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dubbing.css"> <!-- Reusing dubbing styles for consistency -->
+    <link rel="stylesheet" href="css/subtitles.css">
+</head>
+<body>
+
+    <header class="header">
+        <nav class="nav container">
+            <a href="index.html" class="nav__logo">EchoVerse AI</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="studio section">
+            <div class="studio__container container">
+                <div class="studio__header">
+                    <h1 class="studio__title">AI Subtitle Generator</h1>
+                    <p class="studio__description">Upload your video and our AI will generate accurate, synced subtitles for you.</p>
+                </div>
+
+                <div class="studio__workspace">
+                    <div class="studio__upload-area">
+                        <input type="file" id="video-upload" class="studio__upload-input" accept="video/*">
+                        <label for="video-upload" class="studio__upload-label">
+                            <svg class="studio__upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h4l2 2h4a2 2 0 012 2v2M7 16a4 4 0 004 4h4a4 4 0 004-4M7 16v-4a2 2 0 012-2h4a2 2 0 012 2v4"></path></svg>
+                            <span class="studio__upload-text">Click to upload a video</span>
+                            <span class="studio__upload-subtext">MP4, MOV, or AVI - Max 500MB</span>
+                            <span id="file-name" class="studio__file-name"></span>
+                        </label>
+                    </div>
+
+                    <div class="studio__controls">
+                        <div class="control-group">
+                            <label for="subtitle-format">Subtitle Format</label>
+                            <select id="subtitle-format" class="custom-select">
+                                <option value="srt">SRT (.srt)</option>
+                                <option value="vtt">VTT (.vtt)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <button id="generate-btn" class="studio__button">
+                                Generate Subtitles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading-indicator" class="studio__loading hidden">
+                    <div class="spinner"></div>
+                    <p>Generating subtitles... This may take a few moments.</p>
+                </div>
+
+                 <div id="result-area" class="studio__result hidden">
+                    <h2 class="section__title-sm">Your Subtitles are Ready!</h2>
+                    <div class="subtitle-preview-container">
+                        <p class="subtitle-preview-text"></p>
+                    </div>
+                    <a href="#" id="download-btn" class="studio__button--download">Download Subtitles</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__container container">
+            <p>&copy; 2024 EchoVerse AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/subtitles.js"></script>
+</body>
+</html> 

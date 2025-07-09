@@ -1,0 +1,8 @@
+# Backend dependencies
+backend/node_modules/
+
+# Uploaded files from multer
+backend/uploads/
+
+# Environment variables - IMPORTANT to keep secret
+backend/.env 

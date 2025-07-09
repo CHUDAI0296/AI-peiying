@@ -1,0 +1,19 @@
+.subtitle-preview-container {
+    width: 100%;
+    max-width: 600px;
+    height: 200px;
+    background-color: #000;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-y: auto;
+    text-align: left;
+    margin: 1rem auto 2rem;
+    font-family: monospace;
+}
+
+.subtitle-preview-text {
+    white-space: pre;
+    color: var(--text-color);
+    font-size: 0.9rem;
+} 
