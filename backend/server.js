@@ -32,6 +32,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// This endpoint starts the dubbing process and returns a job ID
 app.post('/api/translate', upload.single('video'), async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No video file uploaded.');
@@ -43,13 +44,10 @@ app.post('/api/translate', upload.single('video'), async (req, res) => {
 
     if (!apiKey) {
         console.error('Tavus API key is not set in .env file.');
-        fs.unlinkSync(videoPath); // Clean up the uploaded file
+        fs.unlinkSync(videoPath);
         return res.status(500).send('Server configuration error: API key not found.');
     }
 
-    console.log(`Processing video: ${req.file.originalname}`);
-    console.log(`Source: ${sourceLang}, Target: ${targetLang}`);
-    
     const dubFormData = new FormData();
     dubFormData.append('video', fs.createReadStream(videoPath));
     dubFormData.append('source_language', sourceLang);
@@ -77,60 +75,46 @@ app.post('/api/translate', upload.single('video'), async (req, res) => {
              throw new Error('Could not get dub_id from Tavus API response.');
         }
 
-        console.log(`Dubbing job started with ID: ${dubId}. Polling for result...`);
-
-        let finalResult = null;
-        let pollAttempts = 0;
-        const maxPollAttempts = 30; // Poll for 5 minutes (30 * 10s)
-        const pollInterval = 10000; // 10 seconds
-
-        while (pollAttempts < maxPollAttempts) {
-            await new Promise(resolve => setTimeout(resolve, pollInterval)); // Wait before polling
-            
-            console.log(`Polling attempt ${pollAttempts + 1}...`);
-            const statusResponse = await fetch(`https://api.tavus.io/v2/dub/${dubId}`, {
-                method: 'GET',
-                headers: { 'x-api-key': apiKey }
-            });
-
-            if (!statusResponse.ok) {
-                console.error(`Failed to get status for dub_id ${dubId}. Status: ${statusResponse.status}`);
-                pollAttempts++;
-                continue;
-            }
-
-            const statusData = await statusResponse.json();
-            
-            if (statusData.status === 'completed') {
-                console.log('Dubbing completed!');
-                finalResult = statusData;
-                break;
-            } else if (statusData.status === 'error') {
-                console.error(`Dubbing job failed with error:`, statusData.error_message);
-                throw new Error(`Dubbing job failed with error.`);
-            }
-
-            console.log(`Current status: ${statusData.status}. Waiting...`);
-            pollAttempts++;
-        }
-
-        if (!finalResult) {
-            throw new Error('Dubbing job timed out after 5 minutes.');
-        }
-
-        const videoUrl = finalResult.dubbed_video_url;
-        console.log('Successfully dubbed video. Result URL:', videoUrl);
-        
-        res.json({ translatedVideoUrl: videoUrl });
+        console.log(`Dubbing job started successfully. Returning dub_id: ${dubId}`);
+        // Immediately return the job ID to the client
+        res.json({ dubId: dubId });
 
     } catch (error) {
-        console.error('Error processing video with Tavus API:', error.message);
-        res.status(500).send('Failed to process video.');
+        console.error('Error starting dubbing job with Tavus API:', error.message);
+        res.status(500).send('Failed to start video processing job.');
     } finally {
-        // Clean up the originally uploaded file from the server
         fs.unlinkSync(videoPath);
     }
 });
+
+// This new endpoint checks the status of a dubbing job
+app.get('/api/status/:id', async (req, res) => {
+    const { id } = req.params;
+    const apiKey = process.env.TAVUS_API_KEY;
+
+    if (!apiKey) {
+        return res.status(500).send('Server configuration error: API key not found.');
+    }
+
+    try {
+        const statusResponse = await fetch(`https://api.tavus.io/v2/dub/${id}`, {
+            method: 'GET',
+            headers: { 'x-api-key': apiKey }
+        });
+
+        if (!statusResponse.ok) {
+            return res.status(statusResponse.status).send(`Failed to get status for job ${id}.`);
+        }
+
+        const statusData = await statusResponse.json();
+        res.json(statusData);
+
+    } catch (error) {
+        console.error(`Error fetching status for job ${id}:`, error.message);
+        res.status(500).send('Failed to fetch job status.');
+    }
+});
+
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

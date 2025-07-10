@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showStep(loadingStep);
-        loadingStatus.textContent = 'Uploading video... (0/4)';
+        loadingStatus.textContent = 'Uploading video...';
 
         const formData = new FormData();
         formData.append('video', uploadedFile);
@@ -83,31 +83,80 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('targetLang', getEl('target-lang').value);
 
         try {
-            const response = await fetch('http://localhost:3000/api/translate', {
+            // Step 1: Start the job and get the job ID
+            const response = await fetch('/api/translate', {
                 method: 'POST',
                 body: formData,
             });
 
             if (!response.ok) {
-                throw new Error('Server responded with an error.');
+                const errorText = await response.text();
+                throw new Error(`Server failed to start job: ${errorText}`);
             }
 
             const result = await response.json();
-            
-            // Simulate the rest of the steps based on backend response
-            loadingStatus.textContent = 'Processing... (2/4)';
-            
-            // In a real app, you might poll a status endpoint using result.jobId
-            // For now, we just use the returned URL directly after a delay
-            setTimeout(() => {
-                 showResult(result.translatedVideoUrl); // Corrected property name
-            }, 2000);
+            const dubId = result.dubId;
+
+            if (!dubId) {
+                throw new Error("Did not receive a job ID from the server.");
+            }
+
+            // Step 2: Poll for the result
+            pollForStatus(dubId);
 
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to process the video. Please try again.');
-            resetStudio(); // Go back to the start
+            alert(`Failed to process the video. ${error.message}`);
+            resetStudio();
         }
+    };
+
+    // New function to poll for the job status
+    const pollForStatus = async (dubId) => {
+        const pollInterval = 5000; // 5 seconds
+        const maxAttempts = 60; // 5 minutes max
+        let attempts = 0;
+
+        const intervalId = setInterval(async () => {
+            if (attempts >= maxAttempts) {
+                clearInterval(intervalId);
+                alert("Processing timed out. Please try again.");
+                resetStudio();
+                return;
+            }
+
+            try {
+                const statusResponse = await fetch(`/api/status/${dubId}`);
+                if (!statusResponse.ok) {
+                    // Stop polling on server error
+                    clearInterval(intervalId);
+                    alert("An error occurred while checking the status. Please try again.");
+                    resetStudio();
+                    return;
+                }
+
+                const statusData = await statusResponse.json();
+                
+                // Update loading status text
+                loadingStatus.textContent = `Processing... (${statusData.status || 'initializing'})`;
+
+                if (statusData.status === 'completed') {
+                    clearInterval(intervalId);
+                    showResult(statusData.dubbed_video_url);
+                } else if (statusData.status === 'error') {
+                    clearInterval(intervalId);
+                    alert(`Processing failed: ${statusData.error_message || 'Unknown error'}`);
+                    resetStudio();
+                }
+
+            } catch (error) {
+                clearInterval(intervalId);
+                alert("Failed to check processing status. Please check your connection and try again.");
+                resetStudio();
+            }
+
+            attempts++;
+        }, pollInterval);
     };
 
     // Show the final result
