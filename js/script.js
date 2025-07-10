@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const dubbedVideo = getEl('dubbed-video');
     const restartBtn = getEl('restart-btn');
 
-    let uploadedFile = null; // Changed to store the file object
+    let uploadedFile = null;
+    let uploadedFileUrl = null; // Will store the object URL
 
     // --- Functions ---
 
@@ -58,8 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(uploadedFileUrl);
         }
 
-        uploadedFile = file; // Store the file object
-        const uploadedFileUrl = URL.createObjectURL(file);
+        uploadedFile = file;
+        uploadedFileUrl = URL.createObjectURL(file); // Assign to the outer scope variable
         videoPreview.src = uploadedFileUrl;
         videoFilename.textContent = file.name;
 
@@ -78,7 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('video', uploadedFile);
-        formData.append('targetLanguage', getEl('target-lang').value);
+        formData.append('sourceLang', getEl('source-lang').value);
+        formData.append('targetLang', getEl('target-lang').value);
 
         try {
             const response = await fetch('http://localhost:3000/api/translate', {
@@ -98,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // In a real app, you might poll a status endpoint using result.jobId
             // For now, we just use the returned URL directly after a delay
             setTimeout(() => {
-                 showResult(result.dubbedVideoUrl);
+                 showResult(result.translatedVideoUrl); // Corrected property name
             }, 2000);
 
         } catch (error) {
@@ -111,19 +113,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show the final result
     const showResult = (dubbedUrl) => {
         if (uploadedFile) {
-            originalVideo.src = URL.createObjectURL(uploadedFile);
-            dubbedVideo.src = dubbedUrl; // Use the URL from the backend
+            originalVideo.src = uploadedFileUrl; // Use the existing object URL
+            dubbedVideo.src = dubbedUrl;
         }
         showStep(resultStep);
     };
     
     // Reset the studio to the initial state
     const resetStudio = () => {
-        const uploadedFileUrl = videoPreview.src;
         if (uploadedFileUrl) {
             URL.revokeObjectURL(uploadedFileUrl);
         }
         uploadedFile = null;
+        uploadedFileUrl = null; // Reset the URL variable
         fileInput.value = ''; // Reset file input
         videoPreview.src = '';
         originalVideo.src = '';
