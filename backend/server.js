@@ -13,6 +13,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Serve uploaded files statically from the 'uploads' directory
+app.use('/uploads', express.static('uploads'));
+
 // Set up multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
@@ -28,25 +31,27 @@ app.post('/api/translate', upload.single('video'), async (req, res) => {
         console.log('File received:', req.file.originalname);
         console.log('Target Language:', targetLanguage);
 
-        // --- MOCK API RESPONSE ---
-        // In a real scenario, you would call the actual API here.
-        // For now, we'll just simulate a successful response after a short delay.
+        // --- REALISTIC MOCK RESPONSE ---
+        // We now serve the uploaded file back to the user.
         
-        console.log("Simulating API call...");
+        console.log("Simulating processing and generating response URL...");
 
         setTimeout(() => {
-            const mockData = {
-                message: "Video is being processed",
+            // Construct the URL to the uploaded file so the frontend can access it.
+            const videoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+            const responseData = {
+                message: "Video processing complete",
                 jobId: `job_${Date.now()}`,
-                dubbedVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" // Placeholder URL
+                dubbedVideoUrl: videoUrl // The URL of the user's own uploaded video
             };
             
-            // Clean up the uploaded file
-            fs.unlinkSync(req.file.path);
+            // We DO NOT delete the file here anymore because we need to serve it.
+            // fs.unlinkSync(req.file.path); 
             
-            res.json(mockData);
+            res.json(responseData);
 
-        }, 5000); // 5-second delay to simulate processing
+        }, 3000); // 3-second delay to simulate processing
 
     } catch (error) {
         console.error('Error processing video:', error);
@@ -61,4 +66,4 @@ app.post('/api/translate', upload.single('video'), async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
-}); 
+});
