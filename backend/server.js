@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const FormData = require('form-data');
 const fetch = require('node-fetch');
 
@@ -13,55 +11,79 @@ const app = express();
 const port = 3000;
 
 app.use(cors());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.json()); // Add JSON body parser
 
-// Ensure the uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-}
+// This new endpoint gets a pre-signed URL from Replicate
+app.post('/api/prepare-upload', async (req, res) => {
+    const { fileName, fileType } = req.body;
+    const replicateApiKey = process.env.REPLICATE_API_KEY;
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
+    if (!replicateApiKey) {
+        console.error('Replicate API key is not set.');
+        return res.status(500).send('Server configuration error: Replicate API key not found.');
+    }
+
+    try {
+        console.log(`Requesting upload URL for ${fileName}`);
+        const response = await fetch('https://api.replicate.com/v1/uploads', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Token ${replicateApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                file_name: fileName,
+                content_type: fileType,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Replicate API Error:', data);
+            throw new Error('Failed to get upload URL from Replicate.');
+        }
+        
+        console.log('Successfully got upload URL from Replicate.');
+        res.json({ uploadUrl: data.upload_url, servingUrl: data.serving_url });
+
+    } catch (error) {
+        console.error('Error preparing upload with Replicate:', error.message);
+        res.status(500).send('Failed to prepare file upload.');
     }
 });
 
-const upload = multer({ storage: storage });
 
-// This endpoint starts the dubbing process and returns a job ID
-app.post('/api/translate', upload.single('video'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send('No video file uploaded.');
+// This endpoint starts the dubbing process using a video URL
+app.post('/api/translate', async (req, res) => {
+    const { videoUrl, sourceLang, targetLang } = req.body;
+
+    if (!videoUrl) {
+        return res.status(400).send('No video URL provided.');
     }
 
-    const videoPath = req.file.path;
-    const { sourceLang, targetLang } = req.body;
     const apiKey = process.env.TAVUS_API_KEY;
 
     if (!apiKey) {
         console.error('Tavus API key is not set in .env file.');
-        fs.unlinkSync(videoPath);
         return res.status(500).send('Server configuration error: API key not found.');
     }
 
-    const dubFormData = new FormData();
-    dubFormData.append('video', fs.createReadStream(videoPath));
-    dubFormData.append('source_language', sourceLang);
-    dubFormData.append('destination_language', targetLang);
+    const dubPayload = {
+        video_url: videoUrl,
+        source_language: sourceLang,
+        destination_language: targetLang,
+    };
 
     try {
-        console.log('Sending request to Tavus API to start dubbing job...');
+        console.log('Sending request to Tavus API with video URL to start dubbing job...');
         const initialDubResponse = await fetch('https://api.tavus.io/v2/dub', {
             method: 'POST',
             headers: {
-                ...dubFormData.getHeaders(),
+                'Content-Type': 'application/json',
                 'x-api-key': apiKey,
             },
-            body: dubFormData,
+            body: JSON.stringify(dubPayload),
         });
 
         const initialDubData = await initialDubResponse.json();
@@ -76,14 +98,11 @@ app.post('/api/translate', upload.single('video'), async (req, res) => {
         }
 
         console.log(`Dubbing job started successfully. Returning dub_id: ${dubId}`);
-        // Immediately return the job ID to the client
         res.json({ dubId: dubId });
 
     } catch (error) {
         console.error('Error starting dubbing job with Tavus API:', error.message);
         res.status(500).send('Failed to start video processing job.');
-    } finally {
-        fs.unlinkSync(videoPath);
     }
 });
 

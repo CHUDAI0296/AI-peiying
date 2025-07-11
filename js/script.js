@@ -75,18 +75,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showStep(loadingStep);
-        loadingStatus.textContent = 'Uploading video...';
-
-        const formData = new FormData();
-        formData.append('video', uploadedFile);
-        formData.append('sourceLang', getEl('source-lang').value);
-        formData.append('targetLang', getEl('target-lang').value);
 
         try {
-            // Step 1: Start the job and get the job ID
+            // --- NEW STEP 1: Get presigned URL from our backend ---
+            loadingStatus.textContent = 'Preparing upload...';
+            const prepareResponse = await fetch('/api/prepare-upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fileName: uploadedFile.name,
+                    fileType: uploadedFile.type,
+                }),
+            });
+            if (!prepareResponse.ok) {
+                const errorText = await prepareResponse.text();
+                throw new Error(`Could not prepare upload: ${errorText}`);
+            }
+            const { uploadUrl, servingUrl } = await prepareResponse.json();
+
+            // --- NEW STEP 2: Upload the file directly to the prepared URL ---
+            loadingStatus.textContent = 'Uploading video (this may take a moment)...';
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                body: uploadedFile,
+                headers: {
+                    'Content-Type': uploadedFile.type,
+                },
+            });
+            if (!uploadResponse.ok) {
+                const errorText = await uploadResponse.text();
+                throw new Error(`Failed to upload video file: ${errorText}`);
+            }
+
+            // --- NEW STEP 3: Start the translation job with the new URL ---
+            loadingStatus.textContent = 'Initializing AI processing...';
+            const sourceLang = getEl('source-lang').value;
+            const targetLang = getEl('target-lang').value;
+
             const response = await fetch('/api/translate', {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    videoUrl: servingUrl, // Use the servingUrl from Replicate
+                    sourceLang: sourceLang,
+                    targetLang: targetLang,
+                }),
             });
 
             if (!response.ok) {
@@ -101,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Did not receive a job ID from the server.");
             }
 
-            // Step 2: Poll for the result
+            // Step 4: Poll for the result (this part is unchanged)
             pollForStatus(dubId);
 
         } catch (error) {
