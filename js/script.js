@@ -77,35 +77,26 @@ document.addEventListener('DOMContentLoaded', () => {
         showStep(loadingStep);
 
         try {
-            // --- NEW STEP 1: Get presigned URL from our backend ---
-            loadingStatus.textContent = 'Preparing upload...';
-            const prepareResponse = await fetch('/api/prepare-upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}), // No longer need to send filename/type
-            });
-
-            if (!prepareResponse.ok) {
-                const errorBody = await prepareResponse.json();
-                throw new Error(`Could not prepare upload: ${errorBody.error}`);
-            }
-            const { uploadUrl, fileUrl } = await prepareResponse.json();
-
-            // --- NEW STEP 2: Upload the file directly to the prepared URL (Bytescale) ---
+            // --- NEW SIMPLIFIED FLOW ---
+            // STEP 1: Upload the file through our backend proxy
             loadingStatus.textContent = 'Uploading video (this may take a moment)...';
-            const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
-                body: uploadedFile,
-                headers: {
-                    'Content-Type': uploadedFile.type,
-                },
-            });
-            if (!uploadResponse.ok) {
-                const errorText = await uploadResponse.text();
-                throw new Error(`Failed to upload video file: ${errorText}`);
-            }
+            
+            const formData = new FormData();
+            formData.append('video', uploadedFile); // The key 'video' must match the backend
 
-            // --- NEW STEP 3: Start the dubbing job with the new URL ---
+            const proxyResponse = await fetch('/api/proxy-upload', {
+                method: 'POST',
+                body: formData, // No 'Content-Type' header needed; browser sets it for FormData
+            });
+
+            if (!proxyResponse.ok) {
+                const errorBody = await proxyResponse.json();
+                throw new Error(`Could not upload video: ${errorBody.error}`);
+            }
+            
+            const { fileUrl } = await proxyResponse.json();
+            
+            // --- STEP 2: Start the dubbing job with the new URL ---
             loadingStatus.textContent = 'Initializing AI processing...';
             const sourceLang = getEl('source-lang').value;
             const targetLang = getEl('target-lang').value;
@@ -132,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Did not receive a job ID from the server.");
             }
 
-            // Step 4: Poll for the result
+            // Step 3: Poll for the result
             pollForStatus(videoId); // Poll with the new videoId
 
         } catch (error) {
