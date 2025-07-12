@@ -1,4 +1,4 @@
-const { Bytescale } = require("@bytescale/sdk");
+const Bytescale = require("@bytescale/sdk");
 
 const uploadManager = new Bytescale.UploadManager({
   apiKey: process.env.BYTESCALE_API_KEY
