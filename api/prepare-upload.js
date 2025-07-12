@@ -1,33 +1,23 @@
-const Replicate = require("replicate");
+import { Bytescale } from "@bytescale/sdk";
 
-module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
-    }
+const uploadManager = new Bytescale.UploadManager({
+  apiKey: process.env.BYTESCALE_API_KEY
+});
 
-    const { fileName, fileType } = req.body;
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
+  
+  try {
+    const { uploadUrl, fileUrl } = await uploadManager.createUploadUrl({
+      // No specific parameters needed for a simple upload URL
+    });
 
-    if (!fileName || !fileType) {
-        return res.status(400).json({ error: 'fileName and fileType are required.' });
-    }
-
-    try {
-        const replicate = new Replicate({
-            auth: process.env.REPLICATE_API_TOKEN,
-        });
-
-        const { upload_url, serving_url } = await replicate.files.createUploadUrl(
-            {
-              content_type: fileType,
-              path: fileName
-            }
-        );
-        
-        res.status(200).json({ uploadUrl: upload_url, servingUrl: serving_url });
-
-    } catch (error) {
-        console.error('Error creating Replicate upload:', error);
-        res.status(500).json({ error: 'Failed to prepare file upload.' });
-    }
-}; 
+    res.status(200).json({ uploadUrl: uploadUrl, fileUrl: fileUrl });
+  } catch (error) {
+    console.error('Error creating Bytescale upload URL:', error);
+    res.status(500).json({ error: 'Failed to prepare file upload.' });
+  }
+} 

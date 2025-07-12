@@ -82,18 +82,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const prepareResponse = await fetch('/api/prepare-upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fileName: uploadedFile.name,
-                    fileType: uploadedFile.type,
-                }),
+                body: JSON.stringify({}), // No longer need to send filename/type
             });
-            if (!prepareResponse.ok) {
-                const errorText = await prepareResponse.text();
-                throw new Error(`Could not prepare upload: ${errorText}`);
-            }
-            const { uploadUrl, servingUrl } = await prepareResponse.json();
 
-            // --- NEW STEP 2: Upload the file directly to the prepared URL ---
+            if (!prepareResponse.ok) {
+                const errorBody = await prepareResponse.json();
+                throw new Error(`Could not prepare upload: ${errorBody.error}`);
+            }
+            const { uploadUrl, fileUrl } = await prepareResponse.json();
+
+            // --- NEW STEP 2: Upload the file directly to the prepared URL (Bytescale) ---
             loadingStatus.textContent = 'Uploading video (this may take a moment)...';
             const uploadResponse = await fetch(uploadUrl, {
                 method: 'PUT',
@@ -107,35 +105,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`Failed to upload video file: ${errorText}`);
             }
 
-            // --- NEW STEP 3: Start the translation job with the new URL ---
+            // --- NEW STEP 3: Start the dubbing job with the new URL ---
             loadingStatus.textContent = 'Initializing AI processing...';
             const sourceLang = getEl('source-lang').value;
             const targetLang = getEl('target-lang').value;
 
-            const response = await fetch('/api/translate', {
+            const response = await fetch('/api/start-dubbing', { // Use the new endpoint
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    videoUrl: servingUrl, // Use the servingUrl from Replicate
-                    sourceLang: sourceLang,
-                    targetLang: targetLang,
+                    videoUrl: fileUrl, // Use the fileUrl from Bytescale
+                    sourceLanguage: sourceLang,
+                    targetLanguage: targetLang,
                 }),
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Server failed to start job: ${errorText}`);
+                const errorBody = await response.json();
+                throw new Error(`Server failed to start job: ${errorBody.error}`);
             }
 
             const result = await response.json();
-            const dubId = result.dubId;
+            const videoId = result.videoId; // Use videoId from Tavus
 
-            if (!dubId) {
+            if (!videoId) {
                 throw new Error("Did not receive a job ID from the server.");
             }
 
-            // Step 4: Poll for the result (this part is unchanged)
-            pollForStatus(dubId);
+            // Step 4: Poll for the result
+            pollForStatus(videoId); // Poll with the new videoId
 
         } catch (error) {
             console.error('Error:', error);
@@ -145,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // New function to poll for the job status
-    const pollForStatus = async (dubId) => {
+    const pollForStatus = async (videoId) => { // Parameter changed to videoId
         const pollInterval = 5000; // 5 seconds
         const maxAttempts = 60; // 5 minutes max
         let attempts = 0;
@@ -159,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const statusResponse = await fetch(`/api/status/${dubId}`);
+                const statusResponse = await fetch(`/api/status/${videoId}`); // Use videoId in URL
                 if (!statusResponse.ok) {
                     // Stop polling on server error
                     clearInterval(intervalId);
@@ -175,10 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (statusData.status === 'completed') {
                     clearInterval(intervalId);
-                    showResult(statusData.dubbed_video_url);
+                    showResult(statusData.video_url); // Use video_url from Tavus
                 } else if (statusData.status === 'error') {
                     clearInterval(intervalId);
-                    alert(`Processing failed: ${statusData.error_message || 'Unknown error'}`);
+                    alert(`Processing failed: ${statusData.message || 'Unknown error'}`);
                     resetStudio();
                 }
 
