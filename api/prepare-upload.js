@@ -13,18 +13,8 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const apiKey = process.env.REPLICATE_API_TOKEN;
-
-        // --- START DEBUGGING ---
-        if (apiKey) {
-            console.log(`Verifying Replicate API Token. Starts with: ${apiKey.substring(0, 5)}, ends with: ${apiKey.slice(-4)}`);
-        } else {
-            console.error('CRITICAL: REPLICATE_API_TOKEN is not set in the Vercel environment!');
-        }
-        // --- END DEBUGGING ---
-
         const replicate = new Replicate({
-            auth: apiKey,
+            auth: process.env.REPLICATE_API_TOKEN,
         });
 
         const { upload_url, serving_url } = await replicate.files.createUploadUrl(
