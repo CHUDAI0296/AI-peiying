@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "description": "",
+
   "dependencies": {
     "@bytescale/sdk": "^3.53.0",
     "cors": "^2.8.5",
