@@ -27,12 +27,14 @@ module.exports = async (req, res) => {
             auth: apiKey,
         });
 
-        const upload = await replicate.uploads.create({
-            path: fileName,
-            content_type: fileType,
-        });
+        const { upload_url, serving_url } = await replicate.files.createUploadUrl(
+            {
+              content_type: fileType,
+              path: fileName
+            }
+        );
         
-        res.status(200).json({ uploadUrl: upload.url, servingUrl: upload.serving_url });
+        res.status(200).json({ uploadUrl: upload_url, servingUrl: serving_url });
 
     } catch (error) {
         console.error('Error creating Replicate upload:', error);
