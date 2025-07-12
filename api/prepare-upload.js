@@ -1,10 +1,10 @@
-import { Bytescale } from "@bytescale/sdk";
+const { Bytescale } = require("@bytescale/sdk");
 
 const uploadManager = new Bytescale.UploadManager({
   apiKey: process.env.BYTESCALE_API_KEY
 });
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
